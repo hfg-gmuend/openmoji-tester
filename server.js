@@ -98,7 +98,7 @@ function runTest(req, res, next) {
     'node_modules/.bin/mocha',
     '--reporter mochawesome',
     // https://github.com/adamgruber/mochawesome-report-generator#options
-    '--reporter-options', `quiet=true,reportDir=${req._jobDir},reportFilename=report,json=false,inline=true,reportTitle=OpenMoji-Tester`,
+    '--reporter-options', `quiet=true,reportDir=${req._jobDir},reportFilename=report,json=false,inline=true,code=false,reportTitle=OpenMoji-Tester,reportPageTitle=OpenMoji-Tester`,
     'openmoji/test/*.js',
     '--openmoji-data-json', `${req._jobDir}/openmoji.json`,
     '--openmoji-src-folder', `${req._jobDir}`,
