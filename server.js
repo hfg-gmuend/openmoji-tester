@@ -2,9 +2,10 @@ const path = require('path');
 const fs = require('fs-extra');
 const express = require('express');
 const { exec } = require('child_process');
-const { map } = require('lodash');
+const { map, find } = require('lodash');
 const multer = require('multer');
 const uuidv1 = require('uuid/v1');
+const openmojis = require('./openmoji/data/openmoji.json');
 
 const port = process.env.PORT || 3000;
 const pathPublic = path.resolve(__dirname, 'public');
@@ -57,19 +58,23 @@ function prepareTmpDir(req, res, next) {
 
 function prepareOpenmojiJson(req, res, next) {
   const files = req.files;
-  const openmojis = map(files, f => {
-    return {
-      "emoji": " ",
-      "hexcode": path.basename(f.filename, '.svg'),
-      "group": "",
-      "subgroups": "",
-      "skintone": "",
-      "skintone_combination": "",
-      "skintone_base_emoji": "",
-      "skintone_base_hexcode": ""
+  const openmojisResults = map(files, f => {
+    const filename = path.basename(f.filename, '.svg');
+    let found = find(openmojis, (o) => { return o.hexcode === filename});
+    if (found) {
+      found.group = '';
+      found.subgroups = '';
+      return found;
+    } else {
+      return {
+        "emoji": undefined,
+        "hexcode": filename,
+        "group": "",
+        "subgroups": ""
+      }
     }
   });
-  fs.writeJson(path.join(req._jobDir, 'openmoji.json'), openmojis, err => {
+  fs.writeJson(path.join(req._jobDir, 'openmoji.json'), openmojisResults, err => {
     if (err) return next(err);
     next();
   })
