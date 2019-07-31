@@ -24,7 +24,7 @@ app.use(express.json());
 app.use(express.urlencoded({extended:true}));
 
 app.get('/', (request, res) => {
-  res.sendFile(path.resolve(pathPublic, 'index.html'));
+  res.sendFile(path.resolve(pathPublic, 'upload.html'));
 });
 
 app.post('/test',
@@ -39,10 +39,8 @@ app.post('/test',
 
 function checkUpload(req, res, next) {
   const files = req.files;
-  if (!files) {
-    const err = new Error('Please choose files');
-    err.httpStatusCode = 500;
-    return next(err);
+  if (files.length === 0) {
+    return res.status(500).send('Please choose some OpenMoji svg files! :)');
   }
   next();
 }
@@ -67,10 +65,11 @@ function prepareOpenmojiJson(req, res, next) {
       return found;
     } else {
       return {
-        "emoji": undefined,
+        "emoji": "\"�\"",
         "hexcode": filename,
         "group": "",
-        "subgroups": ""
+        "subgroups": "",
+        "skintone": ""
       }
     }
   });
