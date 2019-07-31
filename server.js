@@ -32,6 +32,7 @@ app.post('/test',
   checkUpload,
   prepareOpenmojiJson,
   runTest,
+  deleteTmpDir,
   sendReport
 );
 
@@ -58,7 +59,7 @@ function prepareOpenmojiJson(req, res, next) {
   const files = req.files;
   const openmojis = map(files, f => {
     return {
-      "emoji": "",
+      "emoji": " ",
       "hexcode": path.basename(f.filename, '.svg'),
       "group": "",
       "subgroups": "",
@@ -75,8 +76,17 @@ function prepareOpenmojiJson(req, res, next) {
 }
 
 function sendReport(req, res, next) {
-  // res.json({files: req.files});
   res.sendFile(path.join(req._jobDir, 'report.html'));
+}
+
+function deleteTmpDir(req, res, next) {
+  const jobDir = req._jobDir;
+  res.on('finish', () => {
+    fs.remove(path.resolve(jobDir), err => {
+      if (err) return console.error(err);
+    });
+  });
+  next();
 }
 
 function runTest(req, res, next) {
@@ -89,7 +99,7 @@ function runTest(req, res, next) {
     '--openmoji-data-json', `${req._jobDir}/openmoji.json`,
     '--openmoji-src-folder', `${req._jobDir}`,
   ].join(' ');
-  console.log(cmd);
+  // console.log(cmd);
   exec(cmd, (err, stdout, stderr) => {
     next();
   });
