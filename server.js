@@ -23,10 +23,6 @@ app.use(express.static(pathPublic));
 app.use(express.json());
 app.use(express.urlencoded({extended:true}));
 
-app.get('/', (request, res) => {
-  res.sendFile(path.resolve(pathPublic, 'upload.html'));
-});
-
 app.post('/test',
   prepareTmpDir,
   upload.array('svgFiles'),
