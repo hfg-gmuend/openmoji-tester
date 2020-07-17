@@ -15,7 +15,7 @@
     "fs-extra": "^8.1.0",
     "jsdom": "^13.2.0",
     "libxmljs": "^0.19.7",
-    "lodash": "^4.17.4",
+    "lodash": "^4.17.19",
     "mocha": "^5.2.0",
     "mochawesome": "^3.1.1",
     "multer": "^1.4.2",
