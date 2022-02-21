@@ -5,7 +5,7 @@ const { exec } = require('child_process');
 const { map, find } = require('lodash');
 const multer = require('multer');
 const uuidv1 = require('uuid/v1');
-const openmojis = require('./openmoji/data/openmoji.json');
+const openmojis = require('./openmoji/data/openmoji-tester.json');
 
 const port = process.env.PORT || 3000;
 const pathPublic = path.resolve(__dirname, 'public');
