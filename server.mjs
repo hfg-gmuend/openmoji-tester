@@ -33,7 +33,7 @@ app.post('/test',
   processSvgs,
   prepareOpenmojiJson,
   runTestAndSaveReport,
-  stripHeadAndBodyFromReport,
+  makeReportInline,
   mergeReports,
   deleteTmpDir,
   sendReport
@@ -61,7 +61,7 @@ function mergeReports(req, res, next){
 
   const templateLocation = path.join('.', 'layout.html')
   let newHtml = fs.readFileSync(templateLocation, 'utf-8')
-  newHtml = newHtml.replace('{{{right_side}}}', report)
+  //newHtml = newHtml.replace('{{{right_side}}}', report)
 
   const newLocation = path.join(req._jobDir, 'index.html')
 
@@ -69,7 +69,12 @@ function mergeReports(req, res, next){
   let svgContent = ''
   files.forEach( (file) => {
       const svgString = fs.readFileSync(file.path, 'utf-8')
-      svgContent += '<div>' + svgString + '</div>'
+      svgContent += '<div class="emoji">'
+      svgContent += '<div class="title">' + file.originalname + '</div>'
+      svgContent += '<div>'
+      svgContent += svgString
+      svgContent += '</div>'
+      svgContent += '</div>'
   })
 
   newHtml = newHtml.replace('{{{left_side}}}', svgContent)
@@ -78,36 +83,54 @@ function mergeReports(req, res, next){
   next()
 }
 
-function stripHeadAndBodyFromReport(req, res, next){
+function makeReportInline(req, res, next){
   const reportLocation = path.join(req._jobDir, 'report.html')
   fs.readFile(reportLocation, 'utf8', function (err,data) {
      if (err) {
         return console.log(err);
      }
      const $ = cheerio.load(data);
-     const headContent = $('head').html() || ''
+     const head = $('head')
+     const body = $('body')
+     //$('document').append('<div>Test</div>')
      //const bodyContent = $('body').html() || ''
 
      //console.log($('body')[0].attribs, $('body').attribs)
 
-     const getAllAttributes = function (node) {
-       // From https://github.com/cheeriojs/cheerio/issues/786
-        return node.attributes || Object.keys(node.attribs).map(
-            name => ({ name, value: node.attribs[name] })
-        );
-      };
+     // const getAllAttributes = function (node) {
+     //   // From https://github.com/cheeriojs/cheerio/issues/786
+     //    return node.attributes || Object.keys(node.attribs).map(
+     //        name => ({ name, value: node.attribs[name] })
+     //    );
+     //  };
 
-     var attrs = { };
+     // var attrs = { };
 
-      getAllAttributes($('body')[0]).forEach(function(idx, attr) {
-          attrs[attr.nodeName] = attr.nodeValue;
-      });
+     //  getAllAttributes($('body')[0]).forEach(function(idx, attr) {
+     //      attrs[attr.nodeName] = attr.nodeValue;
+     //  });
 
-      const newElement = $('body').replaceWith(function () {
-          return $("<div/>", attrs).append($(this).contents());
-      });
+     var newDocument = $('<div>');
+     var pseudoHead = $('<div id="pseudoHead">')
+     pseudoHead.html( head.html() )
+     newDocument.append(pseudoHead)
 
-     fs.writeFileSync(reportLocation, headContent + '\n\n' + newElement, 'utf-8')
+     var pseudoBody = $('<div id="pseudoBody">')
+     pseudoBody.attr('data-raw', body.attr('data-raw'))
+     pseudoBody.html( body.html() )
+     newDocument.append(pseudoBody)
+
+     // var root = $("<section>", {id: "foo", "class": "a"}); 
+     // var div = $("<div>", {id: "foo", "class": "a"});
+     // div.append(head.html())
+     // div.attr('raw-body', body.attr('raw-body'))
+     // root.append(div)
+
+      // const newElement = $('body').replaceWith(function () {
+      //     return $("<div/>", attrs).append($(this).contents());
+      // });
+
+     fs.writeFileSync(reportLocation, newDocument.html(), 'utf-8')
      next();
   });
 }
