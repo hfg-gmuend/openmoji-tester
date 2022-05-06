@@ -35,6 +35,9 @@ export default function getSvgWithOutline(svgString, options = {}){
 		adjustElementIfNeeded($, element, outlineColor, outlineAddedThickness, closeFilledPaths)
 	});
 
+	/* Remove unneeded layers for viewing */
+	$('#grid').remove()
+
 	/* Convert back to SVG string */
 	const htmlString = $.html()
 	const svgOnlyString = htmlString.replace('<html><head></head><body>', '').replace('</body></html>', '') // Remove the added HTML from Cheerio as we don't have HTML
