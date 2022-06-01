@@ -26,17 +26,26 @@ app.use(express.static('public'))
 app.use(express.json());
 app.use(express.urlencoded({extended:true}));
 
-app.post('/test',
+app.post('/test-svg',
   prepareTmpDir,
   upload.array('svgFiles'),
   checkUpload,
   processSvgs,
   prepareOpenmojiJson,
   runTestAndSaveReport,
-  makeReportInline,
-  mergeReports,
+  sendReport,
   deleteTmpDir,
-  sendReport
+);
+
+app.post('/test-visual',
+  prepareTmpDir,
+  upload.array('svgFiles'),
+  checkUpload,
+  processSvgs,
+  prepareOpenmojiJson,
+  createVisualReportAndSave,
+  sendReport,
+  deleteTmpDir,
 );
 
 function processSvgs(req, res, next){
@@ -55,15 +64,11 @@ function processSvgs(req, res, next){
   console.log(files);
 }
 
-function mergeReports(req, res, next){
-  const reportLocation = path.join(req._jobDir, 'report.html')
-  const report = fs.readFileSync(reportLocation, 'utf-8')
-
-  const templateLocation = path.join('.', 'layout.html')
+function createVisualReportAndSave(req, res, next){
+  const templateLocation = path.join('.', 'template-visual-test.html')
   let newHtml = fs.readFileSync(templateLocation, 'utf-8')
-  //newHtml = newHtml.replace('{{{right_side}}}', report)
 
-  const newLocation = path.join(req._jobDir, 'index.html')
+  const newLocation = path.join(req._jobDir, 'report.html')
 
   const files = req.files;
   let svgContent = ''
@@ -77,62 +82,10 @@ function mergeReports(req, res, next){
       svgContent += '</div>'
   })
 
-  newHtml = newHtml.replace('{{{left_side}}}', svgContent)
+  newHtml = newHtml.replace('{{{result}}}', svgContent)
 
   fs.writeFileSync(newLocation, newHtml, 'utf-8')
   next()
-}
-
-function makeReportInline(req, res, next){
-  const reportLocation = path.join(req._jobDir, 'report.html')
-  fs.readFile(reportLocation, 'utf8', function (err,data) {
-     if (err) {
-        return console.log(err);
-     }
-     const $ = cheerio.load(data);
-     const head = $('head')
-     const body = $('body')
-     //$('document').append('<div>Test</div>')
-     //const bodyContent = $('body').html() || ''
-
-     //console.log($('body')[0].attribs, $('body').attribs)
-
-     // const getAllAttributes = function (node) {
-     //   // From https://github.com/cheeriojs/cheerio/issues/786
-     //    return node.attributes || Object.keys(node.attribs).map(
-     //        name => ({ name, value: node.attribs[name] })
-     //    );
-     //  };
-
-     // var attrs = { };
-
-     //  getAllAttributes($('body')[0]).forEach(function(idx, attr) {
-     //      attrs[attr.nodeName] = attr.nodeValue;
-     //  });
-
-     var newDocument = $('<div>');
-     var pseudoHead = $('<div id="pseudoHead">')
-     pseudoHead.html( head.html() )
-     newDocument.append(pseudoHead)
-
-     var pseudoBody = $('<div id="pseudoBody">')
-     pseudoBody.attr('data-raw', body.attr('data-raw'))
-     pseudoBody.html( body.html() )
-     newDocument.append(pseudoBody)
-
-     // var root = $("<section>", {id: "foo", "class": "a"}); 
-     // var div = $("<div>", {id: "foo", "class": "a"});
-     // div.append(head.html())
-     // div.attr('raw-body', body.attr('raw-body'))
-     // root.append(div)
-
-      // const newElement = $('body').replaceWith(function () {
-      //     return $("<div/>", attrs).append($(this).contents());
-      // });
-
-     fs.writeFileSync(reportLocation, newDocument.html(), 'utf-8')
-     next();
-  });
 }
 
 function checkUpload(req, res, next) {
@@ -179,16 +132,16 @@ function prepareOpenmojiJson(req, res, next) {
 }
 
 function sendReport(req, res, next) {
-  res.sendFile(path.join(req._jobDir, 'index.html'));
+  res.sendFile(path.join(req._jobDir, 'report.html'));
 }
 
 function deleteTmpDir(req, res, next) {
-  // const jobDir = req._jobDir;
-  // res.on('finish', () => {
-  //   fs.remove(path.resolve(jobDir), err => {
-  //     if (err) return console.error(err);
-  //   });
-  // });
+  const jobDir = req._jobDir;
+  res.on('finish', () => {
+    fs.remove(path.resolve(jobDir), err => {
+      if (err) return console.error(err);
+    });
+  });
   next();
 }
 
