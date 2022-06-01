@@ -63,32 +63,24 @@
         padding: 1rem;
       }
 
-      #columns{
-        display: flex;
+      #emojis{
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        padding: 1rem 1rem 1rem 1rem;
+        border-radius: 1rem;
+        gap: 1rem;
       }
 
-      @media screen and (max-width:800px){
-        #columns{
-          flex-direction: column;
+      @media screen and (min-width:500px) and (max-width:800px){
+        #emojis{
+          grid-template-columns: repeat(2, minmax(0, 1fr));
         }
       }
 
-      #leftColumn{
-        background: #f5f6f7;
-        flex: 1;
-        border-radius: 1rem;
-      }
-
-      #rightColumn{
-        flex: 2;
-      }
-
-      #leftColumn, #rightColumn{
-        padding: 1rem 1rem 1rem 1rem;
-      }
-
-      #leftColumn .title{
-        margin-bottom: 1rem;
+      @media screen and (max-width:500px){
+        #emojis{
+          grid-template-columns: repeat(1, minmax(0, 1fr));
+        }
       }
 
       .emoji{
@@ -112,29 +104,29 @@
         margin: 1rem 0;
       }
 
-      h2{
-        font-weight: bold;
-        font-size: 1.4rem;
-        margin-bottom: 0.4rem;
+      #instructions{
+        max-width: 600px;
+        font-size: 18px;
+        margin: auto;
+        margin-bottom: 30px;
+        text-align: center;
       }
+
+      #instructions img{
+        width: 100%;
+        margin-top: 10px;
+      }
+
     </style>
   </head>
   <body>
-    <h1>OpenMoji Tester • Results</h1>
-    <div id="columns">
-      <div id="leftColumn">
-        <div class="title">
-          <h2>Visual Test</h2>
-          Do your OpenMojis look good also with the white outline?
-        </div>
-        <div id="emojis">
-          {{{left_side}}}
-        </div>
-      </div>
-      <div id="rightColumn">
-        <h2>File Analysis</h2>
-        {{{right_side}}}
-      </div>
+    <h1>OpenMoji Visual Tester • Results</h1>
+    <div id="instructions">
+      Do your OpenMojis also look good on a dark background (with the white outline)?
+      <img alt="Examples of correct and wrongly designed OpenMojis" src="/assets/example_outlining.png">
+    </div>
+    <div id="emojis">
+      {{{result}}}
     </div>
   </body>
 </html>
