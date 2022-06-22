@@ -11,6 +11,11 @@
   body {
     margin-bottom: 60px; /* Margin bottom by footer height */
   }
+
+  input{
+    cursor: pointer;
+  }
+
   .footer {
     position: absolute;
     bottom: 0;
@@ -44,26 +49,38 @@
     <br>
     <blockquote class="col-lg-8">
       <p>
-        This is a small helper web app which lets you check quicky whether your OpenMoji svg files meet the technical requirements of the OpenMoji Styleguide.
-        Every svg file is tested on things like: colors, layer, names, size etc.
+        This is a small helper web app which lets you check quickly whether your OpenMoji svg file meets the technical requirements of the OpenMoji Styleguide and plays nicely on a dark background.
       </p>
-      <p>All of your files have to produce green tests only. Fix your files until everything is <em style="font-style: normal" class="text-success"><b>green</b></em>! Please! :)</p>
+      <p>
+        Every svg file is tested on things like: colors, layer, names, size ... and in step 3 you are asked to validate with your own eyes if your design works also on a dark background.
+      </p>
     </blockquote>
 
     <br>
     <div class="row">
       <div class="col-lg-12">
 
-        <form action="/test" enctype="multipart/form-data" method="POST">
-        <div class="input-group mb-3">
-          <div class="custom-file">
-            <input type="file" multiple name="svgFiles" accept=".svg" class="custom-file-input" id="inputGroupFile02">
-            <label class="custom-file-label" for="inputGroupFile02">Choose files</label>
+        <form enctype="multipart/form-data" target="_blank" method="POST">
+          <div class="mb-4">
+            <h3>1. Select svg-files</h3>
+            <div class="input-group mb-3">
+              <div class="custom-file">
+                <input type="file" multiple name="svgFiles" accept=".svg" class="custom-file-input" id="inputGroupFile02">
+                <label class="custom-file-label" for="inputGroupFile02">Choose files</label>
+              </div>
+            </div>
           </div>
-          <div class="input-group-append">
-            <button type="submit" class="btn btn-success">Check</button>
+          <div class="mb-4">
+            <h3>2. Check file structure</h3>
+            <p>(According to <a href="https://openmoji.org/styleguide/#submission">styleguide specifications</a>)</p>
+            <p>All of your svg files have to produce green tests only. Fix your files until everything is <em style="font-style: normal" class="text-success"><b>green</b></em>! Please! :)</p>
+            <button type="submit" formaction="/test-svg" class="btn btn-success">Run test</button>
           </div>
-        </div>
+          <div class="mb-4">
+            <h3>3. Check visually (for dark mode)</h3>
+            <p>Every OpenMoji has to work in dark mode too. Make sure that the generated white outline looks as in the stated examples. Please adjust your file until the OpenMoji looks well designed even when used on a dark background.</p>
+            <button type="submit" formaction="/test-visual" class="btn btn-success">Run test</button>
+          </div>
         </form>
 
       </div>

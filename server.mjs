@@ -1,14 +1,17 @@
-const path = require('path');
-const fs = require('fs-extra');
-const express = require('express');
-const { exec } = require('child_process');
-const { map, find } = require('lodash');
-const multer = require('multer');
-const uuidv1 = require('uuid/v1');
-const openmojis = require('./openmoji/data/openmoji-tester.json');
+import cheerio from 'cheerio'
+import path from 'path'
+import fs from 'fs-extra'
+import express from 'express'
+import { exec } from 'child_process'
+import find from 'lodash'
+import map from 'lodash'
+import multer from 'multer'
+import { v1 as uuidv1 } from 'uuid';
+import getSvgWithAddedOutline from './modules/getSvgWithAddedOutline.mjs';
+
+const openmojis = JSON.parse(fs.readFileSync('./openmoji/data/openmoji-tester.json', 'utf-8'));
 
 const port = process.env.PORT || 3000;
-const pathPublic = path.resolve(__dirname, 'public');
 const pathTmp = '/tmp';
 
 const app = express();
@@ -19,19 +22,71 @@ const storage = multer.diskStorage({
 const upload = multer({storage: storage});
 
 
-app.use(express.static(pathPublic));
+app.use(express.static('public'))
 app.use(express.json());
 app.use(express.urlencoded({extended:true}));
 
-app.post('/test',
+app.post('/test-svg',
   prepareTmpDir,
   upload.array('svgFiles'),
   checkUpload,
+  processSvgs,
   prepareOpenmojiJson,
-  runTest,
+  runTestAndSaveReport,
+  sendReport,
   deleteTmpDir,
-  sendReport
 );
+
+app.post('/test-visual',
+  prepareTmpDir,
+  upload.array('svgFiles'),
+  checkUpload,
+  processSvgs,
+  prepareOpenmojiJson,
+  createVisualReportAndSave,
+  sendReport,
+  deleteTmpDir,
+);
+
+function processSvgs(req, res, next){
+  const files = req.files;
+  files.forEach( (file) => {
+    const svgString = fs.readFileSync(file.path, 'utf-8')
+    try{
+      const outlinedSvgString = getSvgWithAddedOutline(svgString)
+      fs.writeFileSync(file.path, outlinedSvgString, 'utf-8')
+    }
+    catch{
+      console.log('adding outline didnt work')
+    }
+  })
+  next()
+  console.log(files);
+}
+
+function createVisualReportAndSave(req, res, next){
+  const templateLocation = path.join('.', 'template-visual-test.html')
+  let newHtml = fs.readFileSync(templateLocation, 'utf-8')
+
+  const newLocation = path.join(req._jobDir, 'report.html')
+
+  const files = req.files;
+  let svgContent = ''
+  files.forEach( (file) => {
+      const svgString = fs.readFileSync(file.path, 'utf-8')
+      svgContent += '<div class="emoji">'
+      svgContent += '<div class="title">' + file.originalname + '</div>'
+      svgContent += '<div>'
+      svgContent += svgString
+      svgContent += '</div>'
+      svgContent += '</div>'
+  })
+
+  newHtml = newHtml.replace('{{{result}}}', svgContent)
+
+  fs.writeFileSync(newLocation, newHtml, 'utf-8')
+  next()
+}
 
 function checkUpload(req, res, next) {
   const files = req.files;
@@ -45,6 +100,7 @@ function prepareTmpDir(req, res, next) {
   req._jobId = 'openmoji-' + uuidv1();
   req._jobDir = path.resolve(pathTmp, req._jobId);
   fs.ensureDir(req._jobDir, (err) => {
+    console.log(req._jobDir)
     if (err) return next(err);
     next();
   });
@@ -89,7 +145,7 @@ function deleteTmpDir(req, res, next) {
   next();
 }
 
-function runTest(req, res, next) {
+function runTestAndSaveReport(req, res, next) {
   const cmd = [
     'node_modules/.bin/mocha',
     '--reporter mochawesome',

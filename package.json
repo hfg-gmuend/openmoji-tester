@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "description": "Does your SVG file follow the OpenMoji Styleguide?",
   "scripts": {
-    "start": "node server.js",
+    "start": "node server.mjs",
     "dev": "nodemon"
   },
   "engines": {
@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "chai": "^4.3.6",
+    "cheerio": "^1.0.0-rc.10",
     "express": "^4.17.1",
     "fs-extra": "^8.1.0",
     "jsdom": "^13.2.0",
@@ -20,7 +21,7 @@
     "mochawesome": "^3.1.2",
     "multer": "^1.4.2",
     "optimist": "^0.6.1",
-    "uuid": "^3.3.2"
+    "uuid": "^8.3.2"
   },
   "devDependencies": {
     "nodemon": "^1.18.9"
