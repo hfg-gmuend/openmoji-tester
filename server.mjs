@@ -3,8 +3,9 @@ import path from 'path'
 import fs from 'fs-extra'
 import express from 'express'
 import { exec } from 'child_process'
-import find from 'lodash'
-import map from 'lodash'
+import lodash from 'lodash';
+const { find } = lodash;
+const { map } = lodash;
 import multer from 'multer'
 import { v1 as uuidv1 } from 'uuid';
 import getSvgWithAddedOutline from './modules/getSvgWithAddedOutline.mjs';
@@ -30,7 +31,6 @@ app.post('/test-svg',
   prepareTmpDir,
   upload.array('svgFiles'),
   checkUpload,
-  processSvgs,
   prepareOpenmojiJson,
   runTestAndSaveReport,
   sendReport,
@@ -41,14 +41,14 @@ app.post('/test-visual',
   prepareTmpDir,
   upload.array('svgFiles'),
   checkUpload,
-  processSvgs,
+  addOutlineToSvgs,
   prepareOpenmojiJson,
   createVisualReportAndSave,
   sendReport,
   deleteTmpDir,
 );
 
-function processSvgs(req, res, next){
+function addOutlineToSvgs(req, res, next){
   const files = req.files;
   files.forEach( (file) => {
     const svgString = fs.readFileSync(file.path, 'utf-8')
@@ -100,7 +100,6 @@ function prepareTmpDir(req, res, next) {
   req._jobId = 'openmoji-' + uuidv1();
   req._jobDir = path.resolve(pathTmp, req._jobId);
   fs.ensureDir(req._jobDir, (err) => {
-    console.log(req._jobDir)
     if (err) return next(err);
     next();
   });
